@@ -1,13 +1,15 @@
 NAME=mmh
 CC=g++
-OBJS=$(NAME).o
-CFLAGS=-c -O3 -std=c++14
+OBJS=mmh.o loadtxt.o
+#OFLAGS=-O0 -g
+OFLAGS=-O3
+CFLAGS=-c $(OFLAGS) -std=c++14
 
 %.o : %.cpp
 	$(CC) $(CFLAGS) $<
 
 all: $(OBJS) main.cpp
-	$(CC) -o exec $(OBJS) main.cpp
+	$(CC) -o exec $(OFLAGS) $(OBJS) main.cpp
 
 clean:
-	rm $(OBJS) exec
+	rm *.o exec
