@@ -12,7 +12,7 @@ public:
   Vector displacement(Vector r1, Vector r2);
   // wf value
   double lnf(double r);
-  double pairf(double r);
+  double fval(double r);
   double lnwf(Matrix pos);
   double wfval(Matrix pos);
   // wf ratio

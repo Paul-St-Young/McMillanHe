@@ -19,7 +19,7 @@ double McMillanHe::lnf(double r)
   return -std::pow(_a1/r, _a2);
 }
 
-double McMillanHe::pairf(double r)
+double McMillanHe::fval(double r)
 {
   return std::exp(lnf(r));
 }
