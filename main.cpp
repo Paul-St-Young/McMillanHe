@@ -7,6 +7,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <time.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -63,11 +64,13 @@ void test_ratio()
 
 void vmc()
 {
-  int natom=108, ndim=3;
+  int natom=32, ndim=3;
   McMillanHe mmh = McMillanHe();
   McMillanHe::Matrix pos(natom, ndim);
   // read initial atomic positions
-  vector<vector<double>> pos0 = loadtxt("../pos108.dat");
+  char fname[100];
+  sprintf(fname, "../pos%d.dat", natom);
+  vector<vector<double>> pos0 = loadtxt(fname);
   for (int iatom=0; iatom<natom; iatom++)
     for (int idim=0; idim<ndim; idim++)
       pos(iatom, idim) = pos0[iatom][idim];
@@ -85,7 +88,9 @@ void vmc()
   > randn(gen, ndist); // normal
   //  set simulation parameters
   mmh.set_a1(2.1);
-  double lbox = 16.99549;
+  double lbox;
+  if (natom == 32) lbox = 11.3303267;
+  if (natom == 108) lbox = 16.99549;
   mmh.set_lbox(lbox);
   int nstep = 2560;
   int nacc = 0;
