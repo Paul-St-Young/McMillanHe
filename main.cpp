@@ -86,40 +86,65 @@ void vmc()
   double lbox = mmh.get_lbox();
   int nstep = 256;
   int nacc = 0;
-  double tau = 0.01;
+  double tau = 0.02;
   double lam = 0.5;
+  double sig = sqrt(tau)*lam;
+  double x2_forward, x2_backward;
   // temporary variables
-  double ratio_wf2, lna;
+  double lna, lnt, prob;
+  bool use_drift=true;
   McMillanHe::Matrix pos1(natom, ndim);
   McMillanHe::Vector move(ndim), drift(ndim), drift1(ndim);
+  McMillanHe::Vector curpos(ndim), newpos(ndim);
   pos1 = pos; // make a copy of initial positions
   // save configurations
   ofstream fpos, fvel;
   fpos.open("all_pos.dat");
-  //fvel.open("all_vel.dat");
+  fvel.open("all_vel.dat");
   fpos << "# natom=" << natom << " ndim=" << ndim << " lbox=" << lbox << endl;
   for (int istep=0; istep<nstep; istep++)
   {
     for (int iatom=0; iatom<natom; iatom++)
     {
+      curpos = pos.row(iatom);
       // make move vector
-      //drift = tau*lam*2*mmh.grad_lnwf(pos1);
       for (int idim=0; idim<ndim; idim++)
       {
-        move(idim) = sqrt(tau)*lam*randn();// + drift;
+        move(idim) = sig*randn();
       }
-      ratio_wf2 = pow(mmh.ratio(pos1, move, iatom), 2);
-      if (ratio_wf2>rand())
+      if (use_drift)
+      {
+        x2_forward = move.squaredNorm();
+        drift = tau*lam*2*mmh.grad_lnwf(pos1, iatom);
+        fvel << drift << endl;
+        move += drift;
+      }
+      // calculate acceptance ratio
+      lna = mmh.diff_lnwf(pos1, move, iatom);
+      newpos = curpos + move;
+      pos1.row(iatom) = newpos;
+      if (use_drift)
+      {
+        drift1 = tau*lam*2*mmh.grad_lnwf(pos1, iatom);
+        x2_backward = (drift1+move).squaredNorm();
+        //lnt = (x2_forward - x2_backward)/(2*pow(sig, 2));
+        lnt = (2*(newpos-curpos)+(drift1-drift)).squaredNorm();
+      } else {
+        lnt = 0.0;
+      }
+      prob = exp(2*lna+lnt);
+      if (prob>rand())
       { // accept move
-        pos1.row(iatom) += move;
         nacc += 1;
       } else { // reject move
+        pos1.row(iatom) = curpos;
       }
     }
     fpos << pos1 << endl;
   }
   cout << ((double)nacc)/(nstep*natom) << endl;
   fpos.close();
+  fvel.close();
 }
 
 int main(int argc, char** argv)
