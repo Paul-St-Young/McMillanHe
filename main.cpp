@@ -6,6 +6,7 @@
 #include <boost/random.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include <time.h>
 
 using namespace std;
 
@@ -62,11 +63,11 @@ void test_ratio()
 
 void vmc()
 {
-  int natom=32, ndim=3;
+  int natom=108, ndim=3;
   McMillanHe mmh = McMillanHe();
   McMillanHe::Matrix pos(natom, ndim);
   // read initial atomic positions
-  vector<vector<double>> pos0 = loadtxt("../pos.dat");
+  vector<vector<double>> pos0 = loadtxt("../pos108.dat");
   for (int iatom=0; iatom<natom; iatom++)
     for (int idim=0; idim<ndim; idim++)
       pos(iatom, idim) = pos0[iatom][idim];
@@ -83,25 +84,33 @@ void vmc()
     boost::mt19937&, boost::normal_distribution<>
   > randn(gen, ndist); // normal
   //  set simulation parameters
-  double lbox = mmh.get_lbox();
-  int nstep = 256;
+  mmh.set_a1(2.1);
+  double lbox = 16.99549;
+  mmh.set_lbox(lbox);
+  int nstep = 2560;
   int nacc = 0;
   double tau = 0.02;
-  double lam = 0.5;
+  tau = 2.0;
+  double lam = 1.0;
   double sig = sqrt(tau)*lam;
   double x2_forward, x2_backward;
   // temporary variables
   double lna, lnt, prob;
-  bool use_drift=true;
-  McMillanHe::Matrix pos1(natom, ndim);
+  bool use_drift=false;
+  int iconf=10;
+  McMillanHe::Matrix pos1(natom, ndim), vel1(natom, ndim);
   McMillanHe::Vector move(ndim), drift(ndim), drift1(ndim);
   McMillanHe::Vector curpos(ndim), newpos(ndim);
+  McMillanHe::Vector x2_backvec(ndim);
   pos1 = pos; // make a copy of initial positions
   // save configurations
   ofstream fpos, fvel;
   fpos.open("all_pos.dat");
   fvel.open("all_vel.dat");
   fpos << "# natom=" << natom << " ndim=" << ndim << " lbox=" << lbox << endl;
+  // time simulation
+  clock_t begin, end;
+  begin = clock();
   for (int istep=0; istep<nstep; istep++)
   {
     for (int iatom=0; iatom<natom; iatom++)
@@ -116,7 +125,7 @@ void vmc()
       {
         x2_forward = move.squaredNorm();
         drift = tau*lam*2*mmh.grad_lnwf(pos1, iatom);
-        fvel << drift << endl;
+        vel1.row(iatom) = drift;
         move += drift;
       }
       // calculate acceptance ratio
@@ -126,9 +135,14 @@ void vmc()
       if (use_drift)
       {
         drift1 = tau*lam*2*mmh.grad_lnwf(pos1, iatom);
-        x2_backward = (drift1+move).squaredNorm();
-        //lnt = (x2_forward - x2_backward)/(2*pow(sig, 2));
-        lnt = (2*(newpos-curpos)+(drift1-drift)).squaredNorm();
+        x2_backvec = -drift1-move;
+        for (int idim=0; idim<ndim; idim++)
+        {
+          x2_backvec(idim) -= round(x2_backvec(idim)/lbox)*lbox;
+        }
+        x2_backward = x2_backvec.squaredNorm();
+        lnt = (x2_forward - x2_backward)/(2*pow(sig, 2));
+        //lnt = (2*(newpos-curpos)+(drift1-drift)).squaredNorm();
       } else {
         lnt = 0.0;
       }
@@ -140,8 +154,18 @@ void vmc()
         pos1.row(iatom) = curpos;
       }
     }
-    fpos << pos1 << endl;
+    if (istep%iconf==0)
+    {
+      // bring configurations back into box
+      for (int iatom=0; iatom<natom; iatom++)
+        for (int idim=0; idim<ndim; idim++)
+          pos1(iatom, idim) -= lbox*round(pos(iatom, idim)/lbox);
+      fpos << pos1 << endl;
+      if (use_drift) fvel << vel1 << endl;
+    }
   }
+  end = clock();
+  cout << "elapsed time: " << (double)(end-begin)/CLOCKS_PER_SEC << " s." << endl;
   cout << ((double)nacc)/(nstep*natom) << endl;
   fpos.close();
   fvel.close();
