@@ -2,6 +2,15 @@
 
 McMillanHe::Vector McMillanHe::displacement(Vector r1, Vector r2)
 {
+  int ndim = r1.size();
+  int nint;
+  Vector dr(ndim);
+  for (int idim=0; idim<ndim; idim++)
+  {
+    dr(idim) = r1(idim)-r2(idim);
+    nint = std::round(dr(idim)/_lbox);
+    dr(idim) -= nint*_lbox;
+  }
   return r1-r2;
 }
 
@@ -34,6 +43,28 @@ double McMillanHe::lnwf(Matrix pos)
 double McMillanHe::wfval(Matrix pos)
 {
   return std::exp(lnwf(pos));
+}
+
+double McMillanHe::diff_lnwf(Matrix pos, Vector move, int i)
+{
+  int natom = pos.rows();
+  double diff = 0.0;
+  double rij, rij1;
+  Vector curpos = pos.row(i);
+  Vector newpos = curpos + move;
+  for (int j=0; j<natom; j++)
+  {
+    if (i==j) continue;
+    rij = displacement(curpos, pos.row(j)).norm();
+    rij1 = displacement(newpos, pos.row(j)).norm();
+    diff += pow(_a1/rij, _a2) - pow(_a1/rij1, _a2);
+  }
+  return diff;
+}
+
+double McMillanHe::ratio(Matrix pos, Vector move, int i)
+{
+  return std::exp(diff_lnwf(pos, move, i));
 }
 
 McMillanHe::Vector McMillanHe::grad_lnwf(Matrix pos, int i)
