@@ -7,11 +7,8 @@ public:
   typedef Eigen::MatrixXd Matrix;
   typedef Eigen::VectorXd Vector;
   McMillanHe()
-    : _a1(2.6), _a2(5.0), _eps(10.22), _sig(2.556), _lbox(11.3303267)
+    : _a1(2.6), _a2(5.0), _lbox(11.3303267)
   {}
-  double get_a1(){return _a1;}
-  double get_a2(){return _a2;}
-  double get_lbox(){return _lbox;}
   Vector displacement(Vector r1, Vector r2);
   // wf value
   double lnf(double r);
@@ -24,6 +21,14 @@ public:
   // wf derivative
   Vector grad_lnwf(Matrix pos, int i);
   double lap_lnwf(Matrix pos, int i);
+  // getters
+  double get_a1(){return _a1;}
+  double get_a2(){return _a2;}
+  double get_lbox(){return _lbox;}
+  // setters
+  void set_a1(double a1){_a1=a1;}
+  void set_a2(double a2){_a2=a2;}
+  void set_lbox(double lbox){_lbox=lbox;}
 private:
   double _a1, _a2, _eps, _sig, _lbox;
 };
