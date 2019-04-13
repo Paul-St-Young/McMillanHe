@@ -1,6 +1,6 @@
 NAME=mmh
 CC=g++
-OBJS=mmh.o loadtxt.o
+OBJS=mmh.o loadtxt.o rng.o
 #OFLAGS=-O0 -g
 OFLAGS=-O3
 CFLAGS=-c $(OFLAGS) -std=c++14
