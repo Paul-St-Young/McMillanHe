@@ -11,12 +11,15 @@
 
 using namespace std;
 
+typedef McMillanHe::Matrix Matrix;
+typedef McMillanHe::Vector Vector;
+
 void test_gl()
 {
   int natom=2, ndim=3;
   double wf0, wf1, wf2, dr=1e-6;
   McMillanHe mmh = McMillanHe();
-  McMillanHe::Matrix pos(natom, ndim);
+  Matrix pos(natom, ndim);
   pos(0, 0) = -1.0;
   pos(1, 0) = 1.0;
   wf0 = mmh.lnwf(pos);
@@ -48,8 +51,8 @@ void test_ratio()
   int natom=2, ndim=3;
   double wf0, wf1, wf2, dr=0.2;
   McMillanHe mmh = McMillanHe();
-  McMillanHe::Matrix pos(natom, ndim);
-  McMillanHe::Vector move(ndim);
+  Matrix pos(natom, ndim);
+  Vector move(ndim);
   move(0) = dr;
   pos(0, 0) = -1.0;
   pos(1, 0) = 1.0;
@@ -62,19 +65,24 @@ void test_ratio()
   cout << exp(wf1-wf0) << endl;
 }
 
-void vmc()
+Matrix get_fcc_pos(int natom, int ndim=3)
 {
-  int natom=32, ndim=3;
-  McMillanHe mmh = McMillanHe();
-  McMillanHe::Matrix pos(natom, ndim);
-  // read initial atomic positions
+  Matrix pos(natom, ndim);
   char fname[100];
   sprintf(fname, "../pos%d.dat", natom);
   vector<vector<double>> pos0 = loadtxt(fname);
   for (int iatom=0; iatom<natom; iatom++)
     for (int idim=0; idim<ndim; idim++)
       pos(iatom, idim) = pos0[iatom][idim];
-  //cout << pos << endl;
+  return pos;
+}
+
+void vmc()
+{
+  int natom=32, ndim=3;
+  McMillanHe mmh = McMillanHe();
+  // read initial atomic positions
+  Matrix pos = get_fcc_pos(natom, ndim);
   // VMC simulation
   //  initialize RNG rand() and randn()
   boost::random::mt19937 gen;
@@ -103,10 +111,10 @@ void vmc()
   double lna, lnt, prob;
   bool use_drift=false;
   int iconf=10;
-  McMillanHe::Matrix pos1(natom, ndim), vel1(natom, ndim);
-  McMillanHe::Vector move(ndim), drift(ndim), drift1(ndim);
-  McMillanHe::Vector curpos(ndim), newpos(ndim);
-  McMillanHe::Vector x2_backvec(ndim);
+  Matrix pos1(natom, ndim), vel1(natom, ndim);
+  Vector move(ndim), drift(ndim), drift1(ndim);
+  Vector curpos(ndim), newpos(ndim);
+  Vector x2_backvec(ndim);
   pos1 = pos; // make a copy of initial positions
   // save configurations
   ofstream fpos, fvel;
