@@ -11,6 +11,7 @@ public:
   ~RandomNumberGenerator();
   double rand();
   double randn();
+  int get_seed(){return _iseed;};
 private:
   int _iseed;
   variate_generator<mt19937&, uniform_real<>>* _grand;
