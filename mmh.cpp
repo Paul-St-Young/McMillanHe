@@ -101,7 +101,6 @@ double McMillanHe::lap_lnwf(Matrix pos, int i)
 
 McMillanHe::Matrix
 McMillanHe::diffuse(Matrix& pos, int nstep, double tau)
-//  RandomNumberGenerator& rng)
 {
   Matrix pos1(pos); // make a copy of initial positions
   _nstep = nstep;
@@ -112,12 +111,10 @@ McMillanHe::diffuse(Matrix& pos, int nstep, double tau)
   // temporary variables
   double lna, prob;
   Vector move(ndim);
-  Vector curpos(ndim), newpos(ndim);
   for (int istep=0; istep<nstep; istep++)
   {
     for (int iatom=0; iatom<natom; iatom++)
     {
-      curpos = pos1.row(iatom);
       // make move vector
       for (int idim=0; idim<ndim; idim++)
       {
@@ -125,14 +122,12 @@ McMillanHe::diffuse(Matrix& pos, int nstep, double tau)
       }
       // calculate acceptance ratio
       lna = diff_lnwf(pos1, move, iatom);
-      newpos = curpos + move;
-      pos1.row(iatom) = newpos;
       prob = exp(2*lna);
       if (prob>_rng.rand())
       { // accept move
+        pos1.row(iatom) += move;
         _nacc += 1;
       } else { // reject move
-        pos1.row(iatom) = curpos;
       }
     }
   }

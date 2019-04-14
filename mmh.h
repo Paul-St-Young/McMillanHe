@@ -27,7 +27,6 @@ public:
   double lap_lnwf(Matrix pos, int i);
   // QMC driver
   Matrix diffuse(Matrix& pos, int nstep, double tau);
-  //  RandomNumberGenerator& rng);
   double get_acc(){return ((double)_nacc)/_nstep;}
   // getters
   double get_a1(){return _a1;}
