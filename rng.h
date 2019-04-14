@@ -1,3 +1,6 @@
+#ifndef RANDOM_NUMBER_GENERATOR_H
+#define RANDOM_NUMBER_GENERATOR_H
+
 #include <boost/random.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -20,3 +23,4 @@ private:
   uniform_real<> _udist;
   normal_distribution<> _ndist;
 };
+#endif
