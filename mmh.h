@@ -13,20 +13,20 @@ public:
     : _a1(2.6), _a2(5.0), _lbox(11.3303267),
     _nstep(0), _nacc(0), _rng(seed)
   {}
-  Vector displacement(Vector r1, Vector r2);
+  Vector displacement(const Vector& r1, const Vector& r2);
   // wf value
-  double lnf(double r);
-  double fval(double r);
-  double lnwf(Matrix pos);
-  double wfval(Matrix pos);
+  double lnf(const double r);
+  double fval(const double r);
+  double lnwf(const Matrix& pos);
+  double wfval(const Matrix& pos);
   // wf ratio
-  double diff_lnwf(Matrix pos, Vector move, int i);
-  double ratio(Matrix pos, Vector move, int i);
+  double diff_lnwf(const Matrix& pos, const Vector& move, const int i);
+  double ratio(const Matrix& pos, const Vector& move, const int i);
   // wf derivative
-  Vector grad_lnwf(Matrix pos, int i);
-  double lap_lnwf(Matrix pos, int i);
+  Vector grad_lnwf(const Matrix& pos, const int i);
+  double lap_lnwf(const Matrix& pos, const int i);
   // QMC driver
-  Matrix diffuse(Matrix& pos, int nstep, double tau);
+  Matrix diffuse(const Matrix& pos, const int nstep, const double tau);
   double get_acc(){return ((double)_nacc)/_nstep;}
   // getters
   double get_a1(){return _a1;}

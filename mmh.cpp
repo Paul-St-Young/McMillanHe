@@ -1,6 +1,7 @@
 #include <mmh.h>
 
-McMillanHe::Vector McMillanHe::displacement(Vector r1, Vector r2)
+McMillanHe::Vector
+McMillanHe::displacement(const Vector& r1, const Vector& r2)
 {
   int ndim = r1.size();
   int nint;
@@ -14,17 +15,17 @@ McMillanHe::Vector McMillanHe::displacement(Vector r1, Vector r2)
   return r1-r2;
 }
 
-double McMillanHe::lnf(double r)
+double McMillanHe::lnf(const double r)
 {
   return -std::pow(_a1/r, _a2);
 }
 
-double McMillanHe::fval(double r)
+double McMillanHe::fval(const double r)
 {
   return std::exp(lnf(r));
 }
 
-double McMillanHe::lnwf(Matrix pos)
+double McMillanHe::lnwf(const Matrix& pos)
 {
   int natom = pos.rows();
   double dist;  // temporary pair distance
@@ -40,12 +41,12 @@ double McMillanHe::lnwf(Matrix pos)
   return val;
 }
 
-double McMillanHe::wfval(Matrix pos)
+double McMillanHe::wfval(const Matrix& pos)
 {
   return std::exp(lnwf(pos));
 }
 
-double McMillanHe::diff_lnwf(Matrix pos, Vector move, int i)
+double McMillanHe::diff_lnwf(const Matrix& pos, const Vector& move, const int i)
 {
   int natom = pos.rows();
   double diff = 0.0;
@@ -62,12 +63,12 @@ double McMillanHe::diff_lnwf(Matrix pos, Vector move, int i)
   return diff;
 }
 
-double McMillanHe::ratio(Matrix pos, Vector move, int i)
+double McMillanHe::ratio(const Matrix& pos, const Vector& move, const int i)
 {
   return std::exp(diff_lnwf(pos, move, i));
 }
 
-McMillanHe::Vector McMillanHe::grad_lnwf(Matrix pos, int i)
+McMillanHe::Vector McMillanHe::grad_lnwf(const Matrix& pos, const int i)
 {
   int natom = pos.rows();
   int ndim = pos.cols();
@@ -84,7 +85,7 @@ McMillanHe::Vector McMillanHe::grad_lnwf(Matrix pos, int i)
   return -_a2*grad;
 }
 
-double McMillanHe::lap_lnwf(Matrix pos, int i)
+double McMillanHe::lap_lnwf(const Matrix& pos, const int i)
 {
   int natom = pos.rows();
   int ndim = pos.cols();
@@ -100,13 +101,13 @@ double McMillanHe::lap_lnwf(Matrix pos, int i)
 }
 
 McMillanHe::Matrix
-McMillanHe::diffuse(Matrix& pos, int nstep, double tau)
+McMillanHe::diffuse(const Matrix& pos, const int nstep, const double tau)
 {
   Matrix pos1(pos); // make a copy of initial positions
   _nstep = nstep;
   _nacc = 0;
-  int natom = pos.rows();
-  int ndim = pos.cols();
+  int natom = pos1.rows();
+  int ndim = pos1.cols();
   double sig = sqrt(tau);
   // temporary variables
   double lna, prob;
