@@ -98,3 +98,43 @@ double McMillanHe::lap_lnwf(Matrix pos, int i)
   }
   return _a2*(_a2+2-ndim)*lap;
 }
+
+McMillanHe::Matrix
+McMillanHe::diffuse(Matrix& pos, int nstep, double tau)
+//  RandomNumberGenerator& rng)
+{
+  Matrix pos1(pos); // make a copy of initial positions
+  _nstep = nstep;
+  _nacc = 0;
+  int natom = pos.rows();
+  int ndim = pos.cols();
+  double sig = sqrt(tau);
+  // temporary variables
+  double lna, prob;
+  Vector move(ndim);
+  Vector curpos(ndim), newpos(ndim);
+  for (int istep=0; istep<nstep; istep++)
+  {
+    for (int iatom=0; iatom<natom; iatom++)
+    {
+      curpos = pos1.row(iatom);
+      // make move vector
+      for (int idim=0; idim<ndim; idim++)
+      {
+        move(idim) = sig*_rng.randn();
+      }
+      // calculate acceptance ratio
+      lna = diff_lnwf(pos1, move, iatom);
+      newpos = curpos + move;
+      pos1.row(iatom) = newpos;
+      prob = exp(2*lna);
+      if (prob>_rng.rand())
+      { // accept move
+        _nacc += 1;
+      } else { // reject move
+        pos1.row(iatom) = curpos;
+      }
+    }
+  }
+  return pos1;
+}

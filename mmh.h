@@ -1,13 +1,17 @@
+#ifndef MCMILLAN_HE_H
+#define MCMILLAN_HE_H
+
 #include <Eigen/Dense>
-#include <iostream>
+#include "rng.h"
 
 class McMillanHe
 {
 public:
   typedef Eigen::MatrixXd Matrix;
   typedef Eigen::VectorXd Vector;
-  McMillanHe()
-    : _a1(2.6), _a2(5.0), _lbox(11.3303267)
+  McMillanHe(int seed=-1)
+    : _a1(2.6), _a2(5.0), _lbox(11.3303267),
+    _nstep(0), _nacc(0), _rng(seed)
   {}
   Vector displacement(Vector r1, Vector r2);
   // wf value
@@ -21,6 +25,10 @@ public:
   // wf derivative
   Vector grad_lnwf(Matrix pos, int i);
   double lap_lnwf(Matrix pos, int i);
+  // QMC driver
+  Matrix diffuse(Matrix& pos, int nstep, double tau);
+  //  RandomNumberGenerator& rng);
+  double get_acc(){return ((double)_nacc)/_nstep;}
   // getters
   double get_a1(){return _a1;}
   double get_a2(){return _a2;}
@@ -31,4 +39,7 @@ public:
   void set_lbox(double lbox){_lbox=lbox;}
 private:
   double _a1, _a2, _eps, _sig, _lbox;
+  int _nstep, _nacc;
+  RandomNumberGenerator _rng;
 };
+#endif
