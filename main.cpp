@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "mmh.h"
-
+#include "ezh5.h"
 #include "loadtxt.h"
 #include <boost/random.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -183,17 +183,31 @@ int main(int argc, char** argv)
   //run_vmc();
 
   // read initial atomic positions
-  int natom=32, ndim=3, iseed=1836137, nstep=100;
+  int natom=32, ndim=3, iseed=1836137;
+  int nstep=10, nblock=100;
   Matrix pos = get_fcc_pos(natom, ndim);
   Matrix pos1(natom, ndim);
   // initialize system
   McMillanHe mmh = McMillanHe(iseed);
-  mmh.set_a1(2.1);
+  mmh.set_a1(2.9);
   double lbox;
   if (natom == 32) lbox = 11.3303267;
   if (natom == 108) lbox = 16.99549;
   mmh.set_lbox(lbox);
-  pos1 = mmh.diffuse(pos, nstep, 0.01);
-  cout << mmh.get_acc() << endl;
+  // perform VMC
+  ezh5::File fpos("all_pos.h5", H5F_ACC_TRUNC);
+  fpos["natom"] = natom;
+  fpos["ndim"] = ndim;
+  fpos["lbox"] = lbox;
+  fpos["init_pos"] = pos;
+  string pname;
+  for (int iblock=0; iblock<nblock; iblock++)
+  {
+    pos = pos1;
+    pos1 = mmh.diffuse(pos, nstep, 2.0);
+    cout << mmh.get_acc() << endl;
+    pname = "pos" + to_string(iblock);
+    fpos[pname] = pos1;
+  }
   return 0;
 }
