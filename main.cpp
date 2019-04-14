@@ -77,23 +77,15 @@ Matrix get_fcc_pos(int natom, int ndim=3)
   return pos;
 }
 
-void vmc()
+void run_vmc()
 {
-  int natom=32, ndim=3;
-  McMillanHe mmh = McMillanHe();
+  int natom=32, ndim=3, iseed=1836137;
+  McMillanHe mmh = McMillanHe(iseed);
   // read initial atomic positions
   Matrix pos = get_fcc_pos(natom, ndim);
   // VMC simulation
-  //  initialize RNG rand() and randn()
-  boost::random::mt19937 gen;
-  boost::uniform_real<> udist(0.0, 1.0);  // uniform distribution
-  boost::normal_distribution<> ndist(0.0, 1.0); // normal dist.
-  boost::variate_generator<
-    boost::mt19937&, boost::uniform_real<>
-  > rand(gen, udist); // uniform [0, 1)
-  boost::variate_generator<
-    boost::mt19937&, boost::normal_distribution<>
-  > randn(gen, ndist); // normal
+  //  initialize RNG
+  RandomNumberGenerator rng(iseed);
   //  set simulation parameters
   mmh.set_a1(2.1);
   double lbox;
@@ -128,11 +120,11 @@ void vmc()
   {
     for (int iatom=0; iatom<natom; iatom++)
     {
-      curpos = pos.row(iatom);
+      curpos = pos1.row(iatom);
       // make move vector
       for (int idim=0; idim<ndim; idim++)
       {
-        move(idim) = sig*randn();
+        move(idim) = sig*rng.randn();
       }
       if (use_drift)
       {
@@ -160,7 +152,7 @@ void vmc()
         lnt = 0.0;
       }
       prob = exp(2*lna+lnt);
-      if (prob>rand())
+      if (prob>rng.rand())
       { // accept move
         nacc += 1;
       } else { // reject move
@@ -172,7 +164,7 @@ void vmc()
       // bring configurations back into box
       for (int iatom=0; iatom<natom; iatom++)
         for (int idim=0; idim<ndim; idim++)
-          pos1(iatom, idim) -= lbox*round(pos(iatom, idim)/lbox);
+          pos1(iatom, idim) -= lbox*round(pos1(iatom, idim)/lbox);
       fpos << pos1 << endl;
       if (use_drift) fvel << vel1 << endl;
     }
@@ -188,6 +180,20 @@ int main(int argc, char** argv)
 {
   //test_gl();
   //test_ratio();
-  vmc();
+  //run_vmc();
+
+  // read initial atomic positions
+  int natom=32, ndim=3, iseed=1836137, nstep=100;
+  Matrix pos = get_fcc_pos(natom, ndim);
+  Matrix pos1(natom, ndim);
+  // initialize system
+  McMillanHe mmh = McMillanHe(iseed);
+  mmh.set_a1(2.1);
+  double lbox;
+  if (natom == 32) lbox = 11.3303267;
+  if (natom == 108) lbox = 16.99549;
+  mmh.set_lbox(lbox);
+  pos1 = mmh.diffuse(pos, nstep, 0.01);
+  cout << mmh.get_acc() << endl;
   return 0;
 }
