@@ -1,18 +1,32 @@
 #include <mmh.h>
+#include <iostream>
+using namespace std;
+
+void McMillanHe::pos_in_box(Matrix& pos)
+{
+  int natom = pos.rows();
+  int ndim = pos.cols();
+  for (int iatom=0; iatom<natom; iatom++)
+  {
+    for (int idim=0; idim<ndim; idim++)
+    {
+      pos(iatom, idim) -= _lbox*std::round(pos(iatom, idim)/_lbox);
+    }
+  }
+}
 
 McMillanHe::Vector
 McMillanHe::displacement(const Vector& r1, const Vector& r2)
 {
   int ndim = r1.size();
   int nint;
-  Vector dr(ndim);
+  Vector dr = r1-r2;
   for (int idim=0; idim<ndim; idim++)
   {
-    dr(idim) = r1(idim)-r2(idim);
     nint = std::round(dr(idim)/_lbox);
     dr(idim) -= nint*_lbox;
   }
-  return r1-r2;
+  return dr;
 }
 
 double McMillanHe::lnf(const double r)
@@ -104,7 +118,7 @@ McMillanHe::Matrix
 McMillanHe::diffuse(const Matrix& pos, const int nstep, const double tau)
 {
   Matrix pos1(pos); // make a copy of initial positions
-  _nstep = nstep;
+  _natt = 0;
   _nacc = 0;
   int natom = pos1.rows();
   int ndim = pos1.cols();
@@ -124,6 +138,8 @@ McMillanHe::diffuse(const Matrix& pos, const int nstep, const double tau)
       // calculate acceptance ratio
       lna = diff_lnwf(pos1, move, iatom);
       prob = exp(2*lna);
+      // attempt move
+      _natt += 1;
       if (prob>_rng.rand())
       { // accept move
         pos1.row(iatom) += move;
@@ -132,5 +148,6 @@ McMillanHe::diffuse(const Matrix& pos, const int nstep, const double tau)
       }
     }
   }
+  pos_in_box(pos1);
   return pos1;
 }

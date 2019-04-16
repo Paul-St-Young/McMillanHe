@@ -204,7 +204,7 @@ int main(int argc, char** argv)
   for (int iblock=0; iblock<nblock; iblock++)
   {
     pos = pos1;
-    pos1 = mmh.diffuse(pos, nstep, 2.0);
+    pos1 = mmh.diffuse(pos, nstep, 0.2);
     cout << mmh.get_acc() << endl;
     pname = "pos" + to_string(iblock);
     fpos[pname] = pos1;

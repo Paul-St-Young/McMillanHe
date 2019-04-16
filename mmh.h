@@ -11,8 +11,9 @@ public:
   typedef Eigen::VectorXd Vector;
   McMillanHe(int seed=-1)
     : _a1(2.6), _a2(5.0), _lbox(11.3303267),
-    _nstep(0), _nacc(0), _rng(seed)
+    _natt(0), _nacc(0), _rng(seed)
   {}
+  void pos_in_box(Matrix& pos);
   Vector displacement(const Vector& r1, const Vector& r2);
   // wf value
   double lnf(const double r);
@@ -26,8 +27,9 @@ public:
   Vector grad_lnwf(const Matrix& pos, const int i);
   double lap_lnwf(const Matrix& pos, const int i);
   // QMC driver
-  Matrix diffuse(const Matrix& pos, const int nstep, const double tau);
-  double get_acc(){return ((double)_nacc)/_nstep;}
+  Matrix diffuse(const Matrix& pos,
+    const int nstep, const double tau);
+  double get_acc(){return ((double)_nacc)/_natt;}
   // getters
   double get_a1(){return _a1;}
   double get_a2(){return _a2;}
@@ -38,7 +40,7 @@ public:
   void set_lbox(double lbox){_lbox=lbox;}
 private:
   double _a1, _a2, _eps, _sig, _lbox;
-  int _nstep, _nacc;
+  int _natt, _nacc;  // number of attempts and accepts
   RandomNumberGenerator _rng;
 };
 #endif
