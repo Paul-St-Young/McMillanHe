@@ -3,9 +3,6 @@
 #include "mmh.h"
 #include "ezh5.h"
 #include "loadtxt.h"
-#include <boost/random.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
 #include <time.h>
 #include <stdio.h>
 
