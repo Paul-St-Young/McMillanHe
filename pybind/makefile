@@ -12,4 +12,4 @@ all: $(OBJS)
 	$(CXX) $(CFLAGS) -o $(LIB) $(OBJS)
 
 clean:
-	rm $(OBJS) $(LIB)
+	rm $(OBJS) $(LIB); find -type l -delete
