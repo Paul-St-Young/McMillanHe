@@ -18,7 +18,6 @@ def init_pos(natom):
   nx = int(round(nxf))
   if not np.isclose(nx, nxf):
     raise RuntimeError('natom=%d nxf=%3.2f!=%d' % (natom, nxf, nx))
-  print lbox
   # create FCC crystal
   alat = lbox/nx
   axes0 = alat/2*(np.ones(3)-np.eye(3))
@@ -92,7 +91,7 @@ def get_gofr(posl, lbox, ngr):
   """
   from forlib.grsk import calc_gofr
   dr = lbox/2./ngr
-  myr = np.arange(0, lbox/2, dr)
+  myr = np.arange(0, lbox/2-1e-10, dr)
   assert len(myr) == ngr
   myr += dr/2.
   grnorm = np.concatenate([
@@ -120,7 +119,10 @@ if __name__ == '__main__':
   # simulation parameters
   #  initial configuration
   natom = 32
-  natom = 108
+  #natom = 108
+  nx = int(round((natom/4.)**(1./3)))
+  lbox *= nx/2.
+  mmh.set_lbox(lbox)
   pdat = 'pos%d.dat' % natom
   if os.path.isfile(pdat):
     pos = np.loadtxt(pdat)
@@ -139,8 +141,12 @@ if __name__ == '__main__':
   #a1 = 3.5
   tau = 0.1      # time step
   nblock = 4096  # number of blocks to run
-  mmh.set_a1(a1)
+  #   N32 liquid
+  a1 = 2.1
+  tau = 0.5      # time step
+  nblock = 256  # number of blocks to run
 
+  mmh.set_a1(a1)
   # sample and cache configuartions
   view = False  # view sampled configurations in 3D (can be slow)
   prefix = 'n%d-a%3.2f-tau%3.2f-nb%d' % (natom, a1, tau, nblock)
