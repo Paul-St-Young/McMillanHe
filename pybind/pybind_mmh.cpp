@@ -11,6 +11,8 @@ PYBIND11_MODULE(mmh, m)
     .def("diffuse", &McMillanHe::diffuse)
     .def("get_acc", &McMillanHe::get_acc)
     .def("get_lbox", &McMillanHe::get_lbox)
+    .def("get_a1", &McMillanHe::get_a1)
+    .def("set_a1", &McMillanHe::set_a1)
     .def("wfval", &McMillanHe::wfval)
     ;
 }
