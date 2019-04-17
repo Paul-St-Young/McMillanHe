@@ -1,2 +1,4 @@
 exec
 *.o
+*.so
+*.pyc
