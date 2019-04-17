@@ -10,6 +10,7 @@ PYBIND11_MODULE(mmh, m)
     .def(py::init<>())
     .def("diffuse", &McMillanHe::diffuse)
     .def("get_acc", &McMillanHe::get_acc)
+    .def("get_lbox", &McMillanHe::get_lbox)
     .def("wfval", &McMillanHe::wfval)
     ;
 }
