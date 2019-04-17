@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from qharv.inspect import volumetric, axes_pos
 from qharv.inspect.grsk import sk2gr, gr2sk
-from qharv.plantation import kyrt
+from qharv.plantation import kyrt, sugar
 
 def init_pos(natom):
   from qharv.inspect import crystal
@@ -120,6 +120,7 @@ if __name__ == '__main__':
   # simulation parameters
   #  initial configuration
   natom = 32
+  natom = 108
   pdat = 'pos%d.dat' % natom
   if os.path.isfile(pdat):
     pos = np.loadtxt(pdat)
@@ -127,19 +128,31 @@ if __name__ == '__main__':
     pos = init_pos(natom)
     np.savetxt(pdat, pos)
   #  VMC parameters
-  tau = 1.0      # time step
   nsubstep = 16  # number of steps per block
-  nblock = 128   # number of blocks to run
+  #   N108 solid
+  a1 = 3.1
   nequil = 64    # number of equilibration blocks
+  nblock = 4096  # number of blocks to run
+  tau = 0.01     # time step
+  #   N108 liquid
+  a1 = 2.1
+  #a1 = 3.5
+  tau = 0.1      # time step
+  nblock = 4096  # number of blocks to run
+  mmh.set_a1(a1)
 
-  # sample configuartions
-  fpos = 'all_pos.h5'
+  # sample and cache configuartions
+  view = False  # view sampled configurations in 3D (can be slow)
+  prefix = 'n%d-a%3.2f-tau%3.2f-nb%d' % (natom, a1, tau, nblock)
+  fpos = 'cache/%s_all-pos.h5' % prefix
   if not os.path.isfile(fpos):
+    sugar.mkdir(os.path.dirname(fpos))
     from qharv.reel import config_h5
     fp = config_h5.open_write(fpos)
     for iblock in range(nblock):
+      path = 'pos%06d' % iblock
       pos1 = mmh.diffuse(pos, nsubstep, tau)
-      config_h5.save_vec(pos1, fp, fp.root, 'pos%06d' % iblock)
+      config_h5.save_vec(pos1, fp, fp.root, path)
       pos = pos1
     fp.close()
     print('acceptance: ', mmh.get_acc())
@@ -153,7 +166,6 @@ if __name__ == '__main__':
     posl.append(pos1)
   fp.close()
 
-  view = True
   if view:
     # view configurations
     fig, ax = volumetric.figax3d()
